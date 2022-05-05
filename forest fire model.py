@@ -3,33 +3,40 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 from matplotlib import colors
 
-# Statement: I used the code from GitHub user "xnx" to create the animation.
+# Statement: I added more detailed instructions in GitHub
+# https://github.com/MrZoyo/Forest-Fire-Von-Neumann
 
 neighbourhood_eight = ((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1))
 neighbourhood_four = ((-1, 0), (0, -1), (0, 1), (1, 0))
 EMPTY, TREE, FIRE = 0, 1, 2
-all_directions = False
 
-if all_directions:
-    neighbourhood = neighbourhood_eight
-else:
-    neighbourhood = neighbourhood_four
-
-# map size
+# set up map size
 # we leave boundary cells always empty, so we extend each side by 2
 x, y = 101, 82
 x += 2
 y += 2
+maxi_digits = len(str(x * y))
 
-# Do we want to see the animation?
+# set up iteration limit
+iteration_limit = 200
+iteration_digits = len(str(iteration_limit))
+# set up interval between frames(ms).
+interval = 200
+# choose the neighbourhood
+all_directions = False
+# choose if need to save grids count
+save_grids_count = True
+# choose if need to save the animation
+# please always set save_animation to True
 save_animation = True
 # Probability of new tree growth per empty cell, on fire itself and grow with alive neighbors.
 p, f, q = 0.05, 0.00001, 0.8
-
+r = 1.0
 # Initialize the map with empty.
 X = np.zeros((y, x))
 
 step = 0
+
 
 def iterate(X):
     # calculate new state of each cell
@@ -73,7 +80,7 @@ def iterate(X):
                         has_neighbour = True
                         break
 
-                if has_neighbour:
+                if has_neighbour and np.random.random() <= r:
                     X_next[iy, ix] = FIRE
                     fire_count += 1
                     tree_count -= 1
@@ -90,11 +97,22 @@ def iterate(X):
                 empty_count += 1
 
     # save the count of each type of cell in file
-    with open("forest_fire_count.txt", "a") as file:
-        file.write(str(step) + " " + str(empty_count) + " " + str(tree_count) + " " + str(fire_count) + "\n")
+    if save_grids_count:
+        with open("forest_fire_count.txt", "a") as file:
+            if step == 1:
+                file.write("Step\tEmpty\tTree\tFire\n")
+                file.write(str(0).zfill(iteration_digits) + "\t" + str(x * y).zfill(maxi_digits) + "\t"
+                           + str(0).zfill(maxi_digits) + "\t" + str(0).zfill(maxi_digits) + "\n")
+            file.write(str(step).zfill(iteration_digits) + "\t" + str(empty_count).zfill(maxi_digits) + "\t"
+                       + str(tree_count).zfill(maxi_digits) + "\t" + str(fire_count).zfill(maxi_digits) + "\n")
 
     return X_next
 
+
+if all_directions:
+    neighbourhood = neighbourhood_eight
+else:
+    neighbourhood = neighbourhood_four
 
 # following code is for animation and imported from GitHub user "xnx". I modified it to fit my code.
 # -------------
@@ -120,10 +138,9 @@ def animate(i):
 
 # Bind our grid to the identifier X in the animate function's namespace.
 animate.X = X
+anim = animation.FuncAnimation(fig, animate, interval=interval, frames=iteration_limit, repeat=False)
 
-# Interval between frames (ms).
-interval = 200
-anim = animation.FuncAnimation(fig, animate, interval=interval, frames=200)
 if save_animation:
     anim.save("forest-fire.gif")
+
 plt.show()
