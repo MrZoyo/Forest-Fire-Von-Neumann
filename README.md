@@ -1,6 +1,10 @@
 # Forest-Fire-Von-Neumann
 Forest fire models that support von Neumann neighbors or all 8 neighbors.
+
+The map starts with all **empty**.
+
 You can set the following parameters：
+
 - **x,y:int** map size
 - **all_direction:bool** switch between von Neumann neighbors (4) and omnidirectional neighbors (8)
 - **save_animation:bool** choose if need to save animation(in gif format)
